@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ConversionSystem™ — Agreement System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cormorant:ital,wght@1,600;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#0a0a07;--bg2:#0f0f0b;--bg3:#141410;--gold:#C9A96E;--cream:#E8DFC8;--cream2:#d4c9a8;--muted:#5a5646;--muted2:#3a3828;--rule:#252318;--serif:'Cormorant Garamond',Georgia,serif;--display:'Cormorant',Georgia,serif;--mono:'DM Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cream);font-family:var(--serif);min-height:100vh}
+body.light{--bg:#faf8f3;--bg2:#f4f1e8;--bg3:#ede8d8;--gold:#8a6a2e;--cream:#1a1810;--cream2:#2e2c20;--muted:#8a8070;--muted2:#c0b898;--rule:#ddd8c8}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+/* ═══ SCREENS ═══ */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ═══ LOGIN ═══ */
+#sc-login{min-height:100vh;display:none;align-items:center;justify-content:center;flex-direction:column;padding:40px;position:relative;z-index:1}
+#sc-login.active{display:flex}
+.login-logo{font-family:var(--display);font-style:italic;font-weight:700;font-size:48px;color:var(--cream);text-align:center;margin-bottom:6px}
+.login-logo sup{font-style:normal;font-weight:400;font-size:.32em;vertical-align:super;color:var(--gold)}
+.login-sub{font-family:var(--mono);font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:44px}
+.gold-line{width:40px;height:.5px;background:var(--gold);margin:0 auto 36px}
+.login-card{border:.5px solid var(--rule);background:var(--bg2);padding:32px 36px;border-radius:2px;width:100%;max-width:400px}
+.lc-label{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;text-align:center}
+.lc-roles{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.btn-role{padding:13px 16px;border:.5px solid var(--rule);background:none;color:var(--cream2);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;text-align:left;display:flex;justify-content:space-between;align-items:center}
+.btn-role:hover{border-color:var(--gold);color:var(--gold)}
+.btn-role.admin{border-color:rgba(201,169,110,.3)}
+.pass-section{display:none;flex-direction:column;gap:8px}
+.pass-section.show{display:flex}
+.pass-input{font-family:var(--mono);font-size:14px;color:var(--cream);background:var(--bg3);border:.5px solid var(--rule);border-radius:2px;padding:11px 16px;outline:none;transition:border-color .2s;text-align:center;letter-spacing:.12em;width:100%}
+.pass-input:focus{border-color:var(--gold)}
+.btn-enter{padding:11px;background:var(--gold);color:var(--bg);border:none;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:500;transition:opacity .2s}
+.btn-enter:hover{opacity:.85}
+.login-err{font-family:var(--mono);font-size:9px;color:#cc6666;display:none;text-align:center;margin-top:4px}
+.login-err.show{display:block}
+.login-hint{font-family:var(--mono);font-size:8px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+
+/* ═══ TOPBAR ═══ */
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:.5px solid var(--rule);padding:14px 40px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(12px)}
+.t-logo{font-family:var(--display);font-style:italic;font-weight:700;font-size:18px;color:var(--cream)}
+.t-logo sup{font-style:normal;font-weight:400;font-size:9px;vertical-align:super}
+.t-right{display:flex;gap:8px;align-items:center}
+.badge{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:.5px solid rgba(201,169,110,.3);padding:5px 12px;border-radius:2px}
+.btn-sm{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;border-radius:2px;cursor:pointer;transition:all .2s;border:.5px solid var(--rule);background:none;color:var(--muted)}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm.gold{background:var(--gold);color:var(--bg);border:none;font-weight:500}
+.btn-sm.gold:hover{opacity:.85}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+
+/* ═══ ADMIN PAGE ═══ */
+#sc-admin{position:relative;z-index:1}
+.page{max-width:680px;margin:0 auto;padding:48px 40px 100px}
+.ph{margin-bottom:36px;padding-bottom:22px;border-bottom:.5px solid var(--rule)}
+.pl{font-family:var(--mono);font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pt{font-family:var(--display);font-style:italic;font-size:30px;margin-bottom:6px}
+.ps{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.grule{height:.5px;background:linear-gradient(90deg,var(--gold),rgba(201,169,110,.1),transparent);margin:22px 0}
+.sl{font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sl::after{content:'';flex:1;height:.5px;background:var(--rule)}
+.fg{margin-bottom:26px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.fr.full{grid-template-columns:1fr}
+.fr.three{grid-template-columns:1fr 1fr 1fr}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.f label span{color:var(--gold)}
+.f input,.f select,.f textarea{font-family:var(--serif);font-size:13px;color:var(--cream);background:var(--bg3);border:.5px solid var(--rule);border-radius:2px;padding:9px 12px;outline:none;transition:border-color .2s;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--gold)}
+.f select option{background:var(--bg3)}
+.f textarea{resize:vertical;min-height:80px;line-height:1.7}
+.f input::placeholder,.f textarea::placeholder{color:var(--muted);font-style:italic;font-size:11px}
+.scope-list{display:flex;flex-direction:column;gap:7px}
+.scope-row{display:flex;gap:7px;align-items:center}
+.scope-row input{flex:1;font-family:var(--serif);font-size:13px;color:var(--cream);background:var(--bg3);border:.5px solid var(--rule);border-radius:2px;padding:8px 12px;outline:none;transition:border-color .2s}
+.scope-row input:focus{border-color:var(--gold)}
+.scope-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 8px;transition:color .2s}
+.scope-del:hover{color:#cc6666}
+.btn-add{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:none;border:.5px dashed rgba(201,169,110,.3);border-radius:2px;padding:7px 14px;cursor:pointer;transition:all .2s;margin-top:6px}
+.btn-add:hover{border-color:var(--gold);background:rgba(201,169,110,.04)}
+.infobox{border:.5px solid var(--rule);background:var(--bg3);padding:12px 16px;border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.infobox strong{color:var(--gold)}
+.sig-wrap{border:.5px solid var(--rule);border-radius:2px;background:var(--bg3);position:relative;cursor:crosshair;overflow:hidden}
+.sig-wrap.signed{border-color:rgba(201,169,110,.4)}
+.sig-canvas{display:block;width:100%;touch-action:none}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);pointer-events:none;transition:opacity .3s;text-transform:uppercase}
+.sig-wrap.signed .sig-hint{opacity:0}
+.sig-clr{position:absolute;bottom:6px;right:8px;font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .2s}
+.sig-clr:hover{color:var(--gold)}
+.btn-gen{width:100%;padding:15px;background:var(--gold);color:var(--bg);border:none;border-radius:2px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;font-weight:500;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-gen:hover{opacity:.87}
+.sharebox{display:none;margin-top:20px;padding:20px;border:.5px solid rgba(201,169,110,.25);border-radius:2px;background:rgba(201,169,110,.04)}
+.sharebox.show{display:block}
+.share-label{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.share-hint{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.share-hint strong{color:var(--gold)}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ag-section{margin-top:40px;padding-top:24px;border-top:.5px solid var(--rule)}
+.ag-item{border:.5px solid var(--rule);border-radius:2px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;background:var(--bg2)}
+.ag-name{font-size:14px;color:var(--cream);margin-bottom:3px}
+.ag-meta{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.ag-actions{display:flex;gap:6px;align-items:center}
+.status-badge{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.status-badge.pending{color:var(--gold);border:.5px solid rgba(201,169,110,.3);background:rgba(201,169,110,.06)}
+.status-badge.signed{color:#7acc8e;border:.5px solid #5aaa6e;background:rgba(90,170,110,.08)}
+.no-ag{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding:24px}
+
+/* ═══ CLIENT PAGE ═══ */
+#sc-client{position:relative;z-index:1}
+.client-page{max-width:760px;margin:0 auto;padding:48px 40px 100px}
+.doc-header{margin-bottom:44px;padding-bottom:24px;border-bottom:.5px solid var(--rule)}
+.doc-ps{font-family:var(--mono);font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.doc-logo{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(36px,5vw,52px);color:var(--cream)}
+.doc-logo sup{font-style:normal;font-weight:400;font-size:.35em;vertical-align:super}
+.doc-tag{font-family:var(--mono);font-size:8px;letter-spacing:.38em;color:var(--gold);text-transform:uppercase;margin-top:7px}
+.doc-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:20px}
+.dml{font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.dmv{font-size:13px;color:var(--cream2);font-style:italic}
+.clause{margin-bottom:28px}
+.cn{font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+.ct{font-family:var(--display);font-style:italic;font-size:19px;font-weight:600;color:var(--cream);margin-bottom:10px}
+.cb{font-size:14px;color:var(--cream2);line-height:1.85;font-weight:300}
+.cb strong{font-weight:500;color:var(--cream)}
+.cb ul{margin:8px 0 8px 18px;display:flex;flex-direction:column;gap:5px}
+.cb ul li::marker{color:var(--gold)}
+.cr{height:.5px;background:var(--rule);margin-top:24px}
+.hb{border:.5px solid rgba(201,169,110,.2);background:rgba(201,169,110,.04);padding:16px 20px;border-radius:2px;margin:14px 0}
+.hbl{font-family:var(--mono);font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.hbr{display:flex;flex-wrap:wrap;gap:20px}
+.hbil{font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.hbiv{font-size:15px;color:var(--cream);font-style:italic}
+.scope-d{margin:8px 0 8px 16px;display:flex;flex-direction:column;gap:5px}
+.scope-d li{font-size:14px;color:var(--cream2);line-height:1.7}
+.scope-d li::marker{color:var(--gold)}
+.sig-section{margin-top:44px;padding-top:28px;border-top:.5px solid var(--rule)}
+.ss-title{font-family:var(--display);font-style:italic;font-size:22px;color:var(--cream);margin-bottom:4px}
+.ss-sub{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:24px}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.sbl{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.sbn{font-family:var(--display);font-style:italic;font-size:15px;color:var(--cream);margin-bottom:10px}
+.sig-img-box{background:var(--bg3);border:.5px solid var(--rule);border-radius:2px;padding:6px;margin-bottom:8px;min-height:70px;display:flex;align-items:center}
+.sig-img-box img{max-height:80px;display:block}
+.sdl{font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.sdv{font-size:13px;color:var(--cream2);font-style:italic}
+.date-input{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--cream);background:transparent;border:none;border-bottom:.5px solid var(--rule);padding:3px 0;outline:none;transition:border-color .2s;width:100%;max-width:200px}
+.date-input:focus{border-color:var(--gold)}
+.date-input::placeholder{color:var(--muted);font-size:11px}
+.submit-center{text-align:center;margin-top:24px}
+.btn-submit{background:var(--gold);color:var(--bg);border:none;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:15px 36px;cursor:pointer;border-radius:2px;transition:opacity .2s;font-weight:500}
+.btn-submit:hover{opacity:.87}
+.btn-submit:disabled{opacity:.4;cursor:not-allowed}
+.submit-note{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--muted);margin-top:10px;line-height:1.7}
+.sec-footer{margin-top:44px;padding-top:18px;border-top:.5px solid var(--rule);display:flex;justify-content:space-between;align-items:flex-end}
+.sf-brand{font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase}
+.barcode-strip{display:flex;height:24px;align-items:flex-end}
+.doc-num-sm{font-family:var(--mono);font-size:7px;letter-spacing:.12em;color:var(--muted2);margin-top:3px;text-align:right}
+
+/* ═══ LOCKED SCREEN ═══ */
+#sc-locked{min-height:calc(100vh - 52px);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px;position:relative;z-index:1}
+#sc-locked.show{display:flex}
+.locked-icon{font-size:32px;color:var(--gold);margin-bottom:18px}
+.locked-title{font-family:var(--display);font-style:italic;font-size:36px;color:var(--cream);margin-bottom:8px}
+.locked-sub{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted);line-height:1.8;margin-bottom:24px}
+.locked-badge{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:.5px solid rgba(201,169,110,.4);padding:10px 24px;border-radius:2px;display:inline-block;margin-bottom:24px}
+.locked-ref{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--cream2);margin-bottom:20px}
+.locked-sigs{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:500px;width:100%;margin-bottom:24px}
+.lsig{border:.5px solid var(--rule);border-radius:2px;padding:14px;background:var(--bg2);text-align:left}
+.lsig-label{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.lsig img{max-height:60px;display:block;margin-bottom:6px}
+.lsig-name{font-size:13px;color:var(--cream2);font-style:italic}
+.lsig-date{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:3px}
+
+/* ═══ SUCCESS ═══ */
+#sc-success{display:none;position:fixed;inset:0;background:rgba(10,10,7,.97);z-index:200;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+#sc-success.show{display:flex}
+.so-icon{font-size:28px;color:var(--gold);margin-bottom:16px}
+.so-title{font-family:var(--display);font-style:italic;font-size:36px;color:var(--cream);margin-bottom:8px}
+.so-line{width:40px;height:.5px;background:var(--gold);margin:0 auto 14px}
+.so-sub{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--muted);line-height:1.9;max-width:400px}
+
+#export-wrap{position:fixed;left:-9999px;top:0;width:794px;padding:48px;background:#faf8f3;font-family:Georgia,serif;color:#1a1810;z-index:-99}
+
+@media(max-width:600px){.fr,.fr.three,.sig-grid,.locked-sigs{grid-template-columns:1fr}.page,.client-page{padding:28px 16px 80px}.topbar{padding:12px 16px}.doc-meta{gap:14px}}
+@media print{.topbar,#sc-success,.sig-clr,.btn-submit,.submit-note{display:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="sc-login" class="active">
+  <div class="login-logo">ConversionSystem<sup>™</sup></div>
+  <div class="login-sub">Agreement System</div>
+  <div class="gold-line"></div>
+  <div class="login-card">
+    <div class="lc-label">Select your role to continue</div>
+    <div class="lc-roles">
+      <button class="btn-role admin" onclick="showPassSection()">
+        <span>Admin — Kali Srivastava</span><span style="color:var(--gold)">→</span>
+      </button>
+      <button class="btn-role" onclick="openClientView()">
+        <span>Client — View & Sign Agreement</span><span style="color:var(--muted)">→</span>
+      </button>
+    </div>
+    <div class="pass-section" id="pass-section">
+      <input class="pass-input" id="pass-input" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkPass()">
+      <button class="btn-enter" onclick="checkPass()">Access Admin Panel</button>
+      <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+    </div>
+    <div class="login-hint">Client? You need the agreement ID shared by ConversionSystem™.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN ═══════════════ -->
+<div id="sc-admin" class="screen">
+  <div class="topbar">
+    <div class="t-logo">ConversionSystem<sup>™</sup></div>
+    <div class="t-right">
+      <div class="badge">Admin Panel</div>
+      <button class="btn-sm" onclick="goLogin()">Logout</button>
+    </div>
+  </div>
+  <div class="page">
+    <div class="ph">
+      <div class="pl">Internal Use Only</div>
+      <div class="pt">Generate Client Agreement</div>
+      <div class="ps">Fill → Sign → Share ID with client</div>
+    </div>
+    <div class="grule"></div>
+
+    <div class="fg">
+      <div class="sl">Client Information</div>
+      <div class="fr">
+        <div class="f"><label>Client full name <span>*</span></label><input id="a-cname" placeholder="Priya Sharma"></div>
+        <div class="f"><label>Brand / Company <span>*</span></label><input id="a-cbrand" placeholder="Aura Jewels"></div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Client email <span>*</span></label><input id="a-cemail" type="email" placeholder="priya@aurajewels.com"></div>
+        <div class="f"><label>City</label><input id="a-ccity" placeholder="Mumbai, Maharashtra"></div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="sl">Project & Fees</div>
+      <div class="fr full"><div class="f"><label>Project title <span>*</span></label><input id="a-project" placeholder="ConversionSystem — Full Jewellery Brand Setup"></div></div>
+      <div class="fr">
+        <div class="f"><label>Agreement date</label><input id="a-date"></div>
+        <div class="f"><label>Duration</label><input id="a-duration" placeholder="30 days / 6 weeks"></div>
+      </div>
+      <div class="fr three">
+        <div class="f"><label>Total fee (₹) <span>*</span></label><input id="a-fee" placeholder="75,000"></div>
+        <div class="f"><label>Advance (₹)</label><input id="a-advance" placeholder="37,500"></div>
+        <div class="f"><label>Balance due on</label><input id="a-balance" placeholder="Project completion"></div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Estimated hours</label><input id="a-hours" placeholder="40 hours"></div>
+        <div class="f"><label>Payment method</label><input id="a-payment" placeholder="Bank transfer / UPI / Cashfree"></div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="sl">Scope of Work</div>
+      <div class="scope-list" id="scope-list">
+        <div class="scope-row"><input placeholder="e.g. Full CRO audit and friction mapping"><button class="scope-del" onclick="delScope(this)">✕</button></div>
+        <div class="scope-row"><input placeholder="e.g. Checkout flow restructuring"><button class="scope-del" onclick="delScope(this)">✕</button></div>
+        <div class="scope-row"><input placeholder="e.g. Behavioral copywriting for product pages"><button class="scope-del" onclick="delScope(this)">✕</button></div>
+      </div>
+      <button class="btn-add" onclick="addScope()">+ Add item</button>
+    </div>
+
+    <div class="fg">
+      <div class="sl">Deliverables & Revisions</div>
+      <div class="fr full"><div class="f"><label>Deliverables / Timeline</label><textarea id="a-deliverables" placeholder="Week 1: Audit report&#10;Week 2: Copy and wireframes&#10;Week 3–4: Implementation"></textarea></div></div>
+      <div class="fr full"><div class="f"><label>Revision rounds included</label><input id="a-revisions" placeholder="2 rounds of revisions included"></div></div>
+    </div>
+
+    <div class="fg">
+      <div class="sl">Custom Terms & Jurisdiction</div>
+      <div class="fr full"><div class="f"><label>Special clause (optional)</label><textarea id="a-clause" placeholder="e.g. Client must provide brand assets within 3 days of signing."></textarea></div></div>
+      <div class="fr full"><div class="f"><label>Jurisdiction city</label><input id="a-jurisdiction" placeholder="Prayagraj, Uttar Pradesh"></div></div>
+    </div>
+
+    <div class="fg">
+      <div class="sl">Your Signature (Kali Srivastava)</div>
+      <div class="infobox">Sign below. This gets embedded in the client agreement. Client will see your signature and add theirs.</div>
+      <div class="sig-wrap" id="admin-sig-wrap">
+        <canvas class="sig-canvas" id="admin-sig-canvas" style="height:90px"></canvas>
+        <div class="sig-hint">Sign here</div>
+        <button class="sig-clr" onclick="clearAdminSig()">Clear</button>
+      </div>
+      <div class="fr" style="margin-top:10px">
+        <div class="f"><label>Your sign date</label><input id="a-pdate"></div>
+      </div>
+    </div>
+
+    <button class="btn-gen" onclick="generateAgreement()">✦ Generate Client Agreement</button>
+
+    <div class="sharebox" id="sharebox">
+      <div class="share-label">Agreement Ready — Share this ID with client</div>
+      <div class="share-hint">Tell the client to open this file and click <strong>"Client — View & Sign Agreement"</strong>, then enter the Agreement ID below.</div>
+      <div class="infobox" style="margin-bottom:12px">
+        Agreement ID: <strong id="gen-id" style="color:var(--gold);font-size:13px">—</strong>
+      </div>
+      <div class="share-btns">
+        <button class="btn-sm gold" onclick="copyAgreementId()">Copy ID</button>
+        <button class="btn-sm" onclick="copyWAMsg()">Copy WhatsApp Message</button>
+        <button class="btn-sm" onclick="previewAsClient()">Preview as Client</button>
+      </div>
+    </div>
+
+    <div class="ag-section">
+      <div class="sl">All Agreements</div>
+      <div id="ag-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CLIENT ENTRY ═══════════════ -->
+<div id="sc-client-entry" class="screen">
+  <div class="topbar">
+    <div class="t-logo">ConversionSystem<sup>™</sup></div>
+    <div class="t-right">
+      <button class="btn-sm" onclick="goLogin()">← Back</button>
+    </div>
+  </div>
+  <div style="min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:40px;position:relative;z-index:1;text-align:center">
+    <div style="font-family:var(--display);font-style:italic;font-size:28px;color:var(--cream);margin-bottom:8px">Enter Agreement ID</div>
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);margin-bottom:32px;line-height:1.6">Enter the Agreement ID shared by ConversionSystem™</div>
+    <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px">
+      <input class="pass-input" id="client-id-input" type="text" placeholder="e.g. CSA-2605-001" style="text-transform:uppercase;letter-spacing:.2em">
+      <button class="btn-enter" onclick="loadClientAgreement()">Open Agreement →</button>
+      <div class="login-err" id="client-id-err">Agreement not found. Check the ID and try again.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CLIENT AGREEMENT ═══════════════ -->
+<div id="sc-client" class="screen">
+  <div class="topbar" id="client-topbar">
+    <div class="t-logo">ConversionSystem<sup>™</sup></div>
+    <div class="t-right">
+      <button class="btn-sm" id="mode-btn" onclick="toggleMode()">☀ Light Mode</button>
+      <button class="btn-sm gold" id="pdf-btn" onclick="downloadPDF()" style="display:none">Download PDF</button>
+    </div>
+  </div>
+  <div class="client-page" id="client-page"></div>
+  <div id="sc-locked">
+    <div class="locked-icon">✦</div>
+    <div class="locked-title">Agreement Already Executed</div>
+    <div class="locked-sub">This agreement has already been reviewed and digitally signed successfully.</div>
+    <div class="locked-badge">EXECUTED &amp; LOCKED</div>
+    <div class="locked-ref" id="locked-ref">—</div>
+    <div class="locked-sigs" id="locked-sigs"></div>
+    <button class="btn-sm gold" style="padding:10px 22px" onclick="downloadPDF()">Download PDF Copy</button>
+  </div>
+</div>
+
+<!-- ═══════════════ SUCCESS ═══════════════ -->
+<div id="sc-success">
+  <div class="so-icon">✦</div>
+  <div class="so-title">Agreement Executed.</div>
+  <div class="so-line"></div>
+  <div class="so-sub">You have signed this agreement. It is now binding.<br>ConversionSystem™ has been notified.<br><br>Please download your copy for your records.</div>
+  <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center">
+    <button class="btn-sm gold" style="padding:10px 20px" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn-sm" style="padding:10px 20px" onclick="document.getElementById('sc-success').classList.remove('show')">View Document</button>
+  </div>
+</div>
+
+<div id="export-wrap"></div>
+
+<script>
+// ═══ STATE ═══
+const ADMIN_PASS = 'kali@CS2024';
+let isLight = false;
+let adminSigSigned = false;
+let adminSigData = null;
+let clientSigSigned = false;
+let clientSigData = null;
+let currentAgreementId = '';
+let currentD = null;
+let lastGenId = '';
+
+// ═══ SCREEN MANAGER ═══
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-login').classList.remove('active');
+  const target = document.getElementById(id);
+  if(target){
+    target.classList.add('active');
+    if(target.tagName === 'DIV' && !target.classList.contains('screen')){
+      target.style.display='';
+    }
+  }
+  window.scrollTo(0,0);
+}
+
+// ═══ LOGIN ═══
+function showPassSection(){
+  document.getElementById('pass-section').classList.add('show');
+  document.getElementById('pass-input').focus();
+}
+function checkPass(){
+  if(document.getElementById('pass-input').value === ADMIN_PASS){
+    document.getElementById('sc-login').classList.remove('active');
+    document.getElementById('sc-admin').classList.add('active');
+    initAdminSig();
+    setDates();
+    renderAgList();
+    window.scrollTo(0,0);
+  } else {
+    document.getElementById('login-err').classList.add('show');
+    document.getElementById('pass-input').value='';
+    document.getElementById('pass-input').focus();
+  }
+}
+function openClientView(){
+  document.getElementById('sc-login').classList.remove('active');
+  document.getElementById('sc-client-entry').classList.add('active');
+  setTimeout(()=>document.getElementById('client-id-input').focus(),100);
+  window.scrollTo(0,0);
+}
+function goLogin(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-login').classList.add('active');
+  document.getElementById('pass-input').value='';
+  document.getElementById('pass-section').classList.remove('show');
+  document.getElementById('login-err').classList.remove('show');
+  window.scrollTo(0,0);
+}
+
+// ═══ DATES ═══
+function setDates(){
+  const t=new Date();
+  const s=`${String(t.getDate()).padStart(2,'0')} / ${String(t.getMonth()+1).padStart(2,'0')} / ${t.getFullYear()}`;
+  document.getElementById('a-date').value=s;
+  document.getElementById('a-pdate').value=s;
+}
+
+// ═══ SCOPE ═══
+function addScope(){
+  const row=document.createElement('div');row.className='scope-row';
+  row.innerHTML='<input placeholder="Add scope item"><button class="scope-del" onclick="delScope(this)">✕</button>';
+  document.getElementById('scope-list').appendChild(row);
+}
+function delScope(btn){if(document.querySelectorAll('.scope-row').length>1)btn.parentElement.remove();}
+function getScope(){const s=[];document.querySelectorAll('.scope-row input').forEach(i=>{if(i.value.trim())s.push(i.value.trim());});return s;}
+
+// ═══ ADMIN SIGNATURE ═══
+function initAdminSig(){
+  const canvas=document.getElementById('admin-sig-canvas');
+  if(!canvas||canvas.dataset.init) return;
+  canvas.dataset.init='1';
+  const wrap=document.getElementById('admin-sig-wrap');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.parentElement.clientWidth||600;
+  canvas.width=w*dpr; canvas.height=90*dpr;
+  canvas.style.width=w+'px'; canvas.style.height='90px';
+  ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#C9A96E'; ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.lineJoin='round';
+  let drawing=false,lx=0,ly=0;
+  function pos(e){const r=canvas.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+  canvas.addEventListener('mousedown',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;});
+  canvas.addEventListener('mousemove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;if(!adminSigSigned){adminSigSigned=true;wrap.classList.add('signed');}});
+  canvas.addEventListener('mouseup',()=>{drawing=false;if(adminSigSigned)adminSigData=canvas.toDataURL('image/png');});
+  canvas.addEventListener('mouseleave',()=>{drawing=false;});
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;if(!adminSigSigned){adminSigSigned=true;wrap.classList.add('signed');}},{passive:false});
+  canvas.addEventListener('touchend',()=>{drawing=false;if(adminSigSigned)adminSigData=canvas.toDataURL('image/png');});
+}
+function clearAdminSig(){
+  const canvas=document.getElementById('admin-sig-canvas');
+  const wrap=document.getElementById('admin-sig-wrap');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
+  adminSigSigned=false; adminSigData=null;
+  wrap.classList.remove('signed');
+}
+
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+
+// ═══ GENERATE AGREEMENT ═══
+function generateAgreement(){
+  if(!v('a-cname')||!v('a-cbrand')||!v('a-cemail')){alert('Fill client name, brand, and email.');return;}
+  if(!v('a-project')||!v('a-fee')){alert('Fill project title and total fee.');return;}
+  if(!adminSigSigned){alert('Please add your signature before generating.');return;}
+  adminSigData=document.getElementById('admin-sig-canvas').toDataURL('image/png');
+  const t=new Date();
+  const id='CSA-'+String(t.getFullYear()).slice(2)+String(t.getMonth()+1).padStart(2,'0')+'-'+String(Math.floor(Math.random()*900)+100);
+  const data={
+    agreementId:id, createdAt:new Date().toISOString(), status:'pending',
+    clientName:v('a-cname'), clientBrand:v('a-cbrand'), clientEmail:v('a-cemail'), clientCity:v('a-ccity'),
+    project:v('a-project'), date:v('a-date'), fee:v('a-fee'), advance:v('a-advance'),
+    balance:v('a-balance'), hours:v('a-hours'), duration:v('a-duration'), payment:v('a-payment'),
+    scope:getScope(), deliverables:v('a-deliverables'), revisions:v('a-revisions'),
+    clause:v('a-clause'), jurisdiction:v('a-jurisdiction')||'Prayagraj, Uttar Pradesh',
+    providerDate:v('a-pdate'), providerSig:adminSigData
+  };
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  all[id]=data;
+  localStorage.setItem('cs_agreements',JSON.stringify(all));
+  lastGenId=id;
+  document.getElementById('gen-id').textContent=id;
+  document.getElementById('sharebox').classList.add('show');
+  document.getElementById('sharebox').scrollIntoView({behavior:'smooth',block:'start'});
+  renderAgList();
+}
+
+function copyAgreementId(){
+  navigator.clipboard.writeText(lastGenId).then(()=>{
+    const btn=event.target; btn.textContent='Copied ✓';
+    setTimeout(()=>btn.textContent='Copy ID',2000);
+  });
+}
+function copyWAMsg(){
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  const ag=all[lastGenId]; if(!ag) return;
+  const msg=`Hi ${ag.clientName},\n\nYour ConversionSystem™ Service Agreement is ready for review and signing.\n\nPlease open the agreement file and click "Client — View & Sign Agreement", then enter this Agreement ID:\n\n*${lastGenId}*\n\nLet me know if you have any questions before signing.\n\n— Kali Srivastava\nConversionSystem™`;
+  navigator.clipboard.writeText(msg).then(()=>{
+    const btn=event.target; btn.textContent='Copied ✓';
+    setTimeout(()=>btn.textContent='Copy WhatsApp Message',2000);
+  });
+}
+function previewAsClient(){
+  if(!lastGenId) return;
+  loadAgreementById(lastGenId);
+}
+
+// ═══ AGREEMENTS LIST ═══
+function renderAgList(){
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  const keys=Object.keys(all).reverse();
+  const el=document.getElementById('ag-list');
+  if(!keys.length){el.innerHTML='<div class="no-ag">No agreements yet.</div>';return;}
+  el.innerHTML=keys.map(id=>{
+    const ag=all[id];
+    return`<div class="ag-item">
+      <div>
+        <div class="ag-name">${ag.clientName} · ${ag.clientBrand}</div>
+        <div class="ag-meta">${ag.agreementId} · ₹${ag.fee} · ${ag.project.slice(0,40)}${ag.project.length>40?'…':''}</div>
+      </div>
+      <div class="ag-actions">
+        <span class="status-badge ${ag.status==='signed'?'signed':'pending'}">${ag.status==='signed'?'Signed':'Pending'}</span>
+        <button class="btn-sm" onclick="loadAgreementById('${id}')">Open</button>
+        <button class="btn-sm" onclick="deleteAg('${id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function deleteAg(id){
+  if(!confirm('Delete this agreement? This cannot be undone.')) return;
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  delete all[id];
+  localStorage.setItem('cs_agreements',JSON.stringify(all));
+  renderAgList();
+}
+
+// ═══ CLIENT ENTRY ═══
+function loadClientAgreement(){
+  const inputId=document.getElementById('client-id-input').value.trim().toUpperCase();
+  if(!inputId){alert('Please enter an Agreement ID.');return;}
+  loadAgreementById(inputId);
+}
+
+function loadAgreementById(id){
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  const D=all[id];
+  if(!D){
+    document.getElementById('client-id-err').classList.add('show');
+    return;
+  }
+  document.getElementById('client-id-err').classList.remove('show');
+  currentAgreementId=id;
+  currentD=D;
+  clientSigSigned=false; clientSigData=null;
+  const lockKey='cs_lock_'+id;
+  const locked=localStorage.getItem(lockKey);
+  // Switch to client screen
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-login').classList.remove('active');
+  document.getElementById('sc-client').classList.add('active');
+  document.getElementById('client-page').style.display='block';
+  document.getElementById('sc-locked').classList.remove('show');
+  window.scrollTo(0,0);
+  if(locked){
+    showLockedState(JSON.parse(locked), D);
+  } else {
+    document.getElementById('client-page').style.display='block';
+    buildClientPage(D);
+  }
+}
+
+function showLockedState(lockData, D){
+  document.getElementById('client-page').style.display='none';
+  document.getElementById('locked-ref').textContent='Agreement Reference: '+D.agreementId;
+  document.getElementById('locked-sigs').innerHTML=`
+    <div class="lsig">
+      <div class="lsig-label">Service Provider</div>
+      ${D.providerSig?`<img src="${D.providerSig}" alt="Provider sig">`:''}
+      <div class="lsig-name">Kali Srivastava · ConversionSystem™</div>
+      <div class="lsig-date">Signed: ${D.providerDate||'—'}</div>
+    </div>
+    <div class="lsig">
+      <div class="lsig-label">Client</div>
+      ${lockData.sig?`<img src="${lockData.sig}" alt="Client sig">`:''}
+      <div class="lsig-name">${D.clientName||'Client'}</div>
+      <div class="lsig-date">Signed: ${lockData.date||'—'}</div>
+    </div>`;
+  document.getElementById('sc-locked').classList.add('show');
+  document.getElementById('pdf-btn').style.display='inline-block';
+}
+
+// ═══ BUILD AGREEMENT PAGE ═══
+function buildClientPage(D){
+  const scope=D.scope&&D.scope.length>0
+    ?`The following services are included in this engagement:<ul class="scope-d">${D.scope.map(s=>`<li>${s}</li>`).join('')}</ul>Work outside this scope will be discussed and agreed separately in writing.`
+    :'As discussed and agreed between both parties prior to commencement.';
+  let fees=`The Client agrees to pay a total project fee of <strong>₹${D.fee}</strong>.`;
+  if(D.advance) fees+=` An advance payment of <strong>₹${D.advance}</strong> is due upon signing this Agreement.`;
+  if(D.balance) fees+=` The remaining balance is due upon <strong>${D.balance}</strong>.`;
+  if(D.payment) fees+=`<br><br><strong>Payment method:</strong> ${D.payment}.`;
+  fees+=`<br><br>Invoices are due within <strong>7 days</strong> of issue. Late payments may attract a 2% monthly interest charge.`;
+  const today=new Date();
+  const todayStr=`${String(today.getDate()).padStart(2,'0')} / ${String(today.getMonth()+1).padStart(2,'0')} / ${today.getFullYear()}`;
+  const clauseN=D.clause?11:10;
+  document.getElementById('client-page').innerHTML=`
+    <div class="doc-header">
+      <div class="doc-ps">Client Service Agreement</div>
+      <div class="doc-logo">ConversionSystem<sup>™</sup></div>
+      <div class="doc-tag">For Jewellery Brands · Psychology Specialisation</div>
+      <div class="doc-meta">
+        <div><div class="dml">Agreement no.</div><div class="dmv">${D.agreementId}</div></div>
+        <div><div class="dml">Date</div><div class="dmv">${D.date}</div></div>
+        <div><div class="dml">Client</div><div class="dmv">${D.clientName}</div></div>
+        <div><div class="dml">Project</div><div class="dmv">${D.project}</div></div>
+      </div>
+    </div>
+    <div class="grule"></div>
+    <div class="clause"><div class="cn">01 · Parties</div><div class="ct">The Parties</div>
+      <div class="cb">This Client Service Agreement is entered into on <strong>${D.date}</strong> between:<br><br>
+        <strong>Service Provider:</strong> Kali Srivastava, operating as ConversionSystem™, a conversion strategy and brand positioning service for jewellery brands.<br><br>
+        <strong>Client:</strong> ${D.clientName}${D.clientBrand?`, representing ${D.clientBrand}`:''}${D.clientCity?`, ${D.clientCity}`:''}.<br><br>
+        Both parties agree to all terms outlined in this Agreement.</div>
+      <div class="cr"></div></div>
+    <div class="clause"><div class="cn">02 · Fees</div><div class="ct">Project Fees & Payment</div>
+      <div class="hb"><div class="hbl">Project Summary</div>
+        <div class="hbr">
+          <div><div class="hbil">Total Fee</div><div class="hbiv">₹${D.fee}</div></div>
+          ${D.advance?`<div><div class="hbil">Advance</div><div class="hbiv">₹${D.advance}</div></div>`:''}
+          ${D.hours?`<div><div class="hbil">Est. Hours</div><div class="hbiv">${D.hours}</div></div>`:''}
+          ${D.duration?`<div><div class="hbil">Duration</div><div class="hbiv">${D.duration}</div></div>`:''}
+        </div></div>
+      <div class="cb">${fees}</div><div class="cr"></div></div>
+    <div class="clause"><div class="cn">03 · Scope</div><div class="ct">Scope of Work</div>
+      <div class="cb">${scope}</div><div class="cr"></div></div>
+    ${D.deliverables?`<div class="clause"><div class="cn">04 · Deliverables</div><div class="ct">Deliverables & Timeline</div><div class="cb">${D.deliverables.replace(/\n/g,'<br>')}</div><div class="cr"></div></div>`:''}
+    <div class="clause"><div class="cn">05 · Revisions</div><div class="ct">Revisions & Change Requests</div>
+      <div class="cb">${D.revisions||'Two (2) rounds of revisions are included'} within the agreed scope. Additional revision rounds will be charged at an agreed hourly rate. All revision requests must be submitted in writing within 5 business days of receiving a deliverable.</div>
+      <div class="cr"></div></div>
+    <div class="clause"><div class="cn">06 · Confidentiality</div><div class="ct">Confidentiality</div>
+      <div class="cb">Both parties agree to hold in strict confidence all proprietary, financial, and strategic information exchanged during this engagement. This obligation survives termination of this Agreement.</div>
+      <div class="cr"></div></div>
+    <div class="clause"><div class="cn">07 · Intellectual Property</div><div class="ct">Intellectual Property</div>
+      <div class="cb">All deliverables produced under this Agreement become the Client's property upon receipt of full payment. ConversionSystem™ retains its proprietary methodologies and frameworks as exclusive intellectual property.</div>
+      <div class="cr"></div></div>
+    <div class="clause"><div class="cn">08 · Termination</div><div class="ct">Termination</div>
+      <div class="cb">Either party may terminate this Agreement with <strong>14 days written notice</strong>. In the event of termination:
+        <ul><li>Work completed up to termination shall be invoiced and payable.</li>
+        <li>Any advance paid is non-refundable unless ConversionSystem™ is in material breach.</li>
+        <li>All deliverables completed shall be transferred upon receipt of outstanding payment.</li></ul>
+      </div><div class="cr"></div></div>
+    <div class="clause"><div class="cn">09 · Disputes</div><div class="ct">Dispute Resolution</div>
+      <div class="cb">In the event of any dispute:
+        <ul><li><strong>First:</strong> Attempt resolution through direct, good-faith communication within 14 days.</li>
+        <li><strong>Then:</strong> If unresolved, engage a mutually agreed mediator before pursuing legal remedy.</li>
+        <li><strong>Jurisdiction:</strong> Any legal proceedings shall be subject to the jurisdiction of courts in <strong>${D.jurisdiction}</strong>.</li></ul>
+      </div><div class="cr"></div></div>
+    ${D.clause?`<div class="clause"><div class="cn">10 · Special Terms</div><div class="ct">Special Terms & Conditions</div><div class="cb">${D.clause}</div><div class="cr"></div></div>`:''}
+    <div class="clause"><div class="cn">${clauseN} · General</div><div class="ct">Entire Agreement</div>
+      <div class="cb">This Agreement constitutes the entire understanding between the parties and supersedes all prior conversations, proposals, or representations. Any modification must be agreed in writing by both parties.</div>
+    </div>
+    <div class="grule"></div>
+    <div class="sig-section">
+      <div class="ss-title">Digital Signatures</div>
+      <div class="ss-sub">Both parties confirm all terms before executing</div>
+      <div class="sig-grid">
+        <div>
+          <div class="sbl">Service Provider</div>
+          <div class="sbn">Kali Srivastava · ConversionSystem™</div>
+          <div class="sig-img-box">${D.providerSig?`<img src="${D.providerSig}" style="max-height:80px">`:'<span style="font-family:var(--mono);font-size:9px;color:var(--muted)">Signature on file</span>'}</div>
+          <div class="sdl">Signed on</div><div class="sdv">${D.providerDate||D.date||'—'}</div>
+        </div>
+        <div>
+          <div class="sbl">Client</div>
+          <div class="sbn">${D.clientName}</div>
+          <div class="sig-wrap" id="client-sig-wrap">
+            <canvas class="sig-canvas" id="client-sig-canvas" style="height:100px"></canvas>
+            <div class="sig-hint">Sign here</div>
+            <button class="sig-clr" onclick="clearClientSig()">Clear</button>
+          </div>
+          <div style="margin-top:10px">
+            <div class="sdl">Date</div>
+            <input class="date-input" id="client-date" value="${todayStr}" placeholder="DD / MM / YYYY">
+          </div>
+        </div>
+      </div>
+      <div class="submit-center">
+        <button class="btn-submit" id="btn-submit" onclick="submitAgreement()">Confirm & Execute Agreement ✦</button>
+        <div class="submit-note">By clicking above, you confirm you have read, understood,<br>and agree to all terms of this Client Service Agreement.</div>
+      </div>
+    </div>
+    <div class="sec-footer">
+      <div>
+        <div class="sf-brand">ConversionSystem™ · conversionsystem.com</div>
+        <div class="sf-brand" style="margin-top:2px">support@conversionsystem.com</div>
+      </div>
+      <div style="text-align:right">
+        <div class="barcode-strip">${makeBarcode()}</div>
+        <div class="doc-num-sm">${D.agreementId}</div>
+      </div>
+    </div>`;
+  setTimeout(initClientSig,100);
+}
+
+function makeBarcode(){
+  const b=[3,1,2,1,1,3,1,2,1,1,3,1,1,2,3,1,2,1,1,2,3,1,1,3,1,2,1,1,2,3,1,1,2,1,3,2,1,1,3,1,2,1,1,2,1,3,1,2,2,1];
+  const t=b.reduce((a,v)=>a+v,0);
+  return b.map((w,i)=>`<span style="width:${((w/t)*140).toFixed(1)}px;height:22px;background:${i%2===0?'#3a3828':'transparent'};display:inline-block;flex-shrink:0"></span>`).join('');
+}
+
+// ═══ CLIENT SIGNATURE ═══
+function initClientSig(){
+  const canvas=document.getElementById('client-sig-canvas');
+  if(!canvas) return;
+  const wrap=document.getElementById('client-sig-wrap');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.parentElement.clientWidth||300;
+  canvas.width=w*dpr; canvas.height=100*dpr;
+  canvas.style.width=w+'px'; canvas.style.height='100px';
+  ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#C9A96E'; ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.lineJoin='round';
+  let drawing=false,lx=0,ly=0;
+  function pos(e){const r=canvas.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+  canvas.addEventListener('mousedown',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;});
+  canvas.addEventListener('mousemove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;if(!clientSigSigned){clientSigSigned=true;wrap.classList.add('signed');}});
+  canvas.addEventListener('mouseup',()=>{drawing=false;if(clientSigSigned)clientSigData=canvas.toDataURL();});
+  canvas.addEventListener('mouseleave',()=>{drawing=false;});
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;if(!clientSigSigned){clientSigSigned=true;wrap.classList.add('signed');}},{passive:false});
+  canvas.addEventListener('touchend',()=>{drawing=false;if(clientSigSigned)clientSigData=canvas.toDataURL();});
+}
+function clearClientSig(){
+  const canvas=document.getElementById('client-sig-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
+  clientSigSigned=false; clientSigData=null;
+  document.getElementById('client-sig-wrap').classList.remove('signed');
+}
+
+// ═══ SUBMIT ═══
+function submitAgreement(){
+  if(!clientSigSigned){alert('Please sign the agreement before submitting.');document.getElementById('client-sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  const d=document.getElementById('client-date')?.value?.trim();
+  if(!d){alert('Please enter today\'s date.');return;}
+  clientSigData=document.getElementById('client-sig-canvas').toDataURL('image/png');
+  // LOCK permanently
+  localStorage.setItem('cs_lock_'+currentAgreementId, JSON.stringify({sig:clientSigData,date:d,lockedAt:new Date().toISOString()}));
+  // Update status
+  const all=JSON.parse(localStorage.getItem('cs_agreements')||'{}');
+  if(all[currentAgreementId]){all[currentAgreementId].status='signed';all[currentAgreementId].signedAt=new Date().toISOString();localStorage.setItem('cs_agreements',JSON.stringify(all));}
+  // Lock UI
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true; btn.textContent='✦ Agreement Executed';
+  document.getElementById('client-sig-canvas').style.pointerEvents='none';
+  document.getElementById('client-sig-wrap').style.cursor='default';
+  const clr=document.querySelector('#client-sig-wrap .sig-clr');
+  if(clr) clr.style.display='none';
+  document.getElementById('pdf-btn').style.display='inline-block';
+  // Email
+  if(currentD){
+    const D=currentD;
+    const subj=encodeURIComponent(`[SIGNED] ${D.clientBrand||D.clientName} — ${D.agreementId}`);
+    const body=encodeURIComponent(`Agreement Executed — ConversionSystem™\n\nAgreement No: ${D.agreementId}\nClient: ${D.clientName}\nBrand: ${D.clientBrand}\nEmail: ${D.clientEmail}\nProject: ${D.project}\nTotal Fee: ₹${D.fee}\n${D.advance?'Advance: ₹'+D.advance+'\n':''}\nClient signed on: ${d}\nStatus: FULLY EXECUTED ✦\n\n— ConversionSystem™ Agreement System`);
+    window.open(`mailto:support@conversionsystem.com?subject=${subj}&body=${body}`);
+  }
+  document.getElementById('sc-success').classList.add('show');
+  window.scrollTo(0,0);
+}
+
+// ═══ MODE TOGGLE ═══
+function toggleMode(){
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  document.getElementById('mode-btn').textContent=isLight?'◑ Dark Mode':'☀ Light Mode';
+}
+
+// ═══ PDF DOWNLOAD ═══
+async function downloadPDF(){
+  const btn=event?.target;
+  if(btn){btn.disabled=true;btn.textContent='Generating…';}
+  const D=currentD;
+  if(!D){if(btn){btn.disabled=false;btn.textContent='Download PDF';}return;}
+  const lockKey='cs_lock_'+currentAgreementId;
+  const locked=localStorage.getItem(lockKey);
+  const lockData=locked?JSON.parse(locked):null;
+  const cSig=lockData?.sig||clientSigData||'';
+  const cDate=lockData?.date||(document.getElementById('client-date')?.value)||'—';
+  const wasLight=isLight;
+  if(!wasLight) document.body.classList.add('light');
+  const wrap=document.getElementById('export-wrap');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;padding:48px;background:#faf8f3;font-family:Georgia,serif;color:#1a1810;z-index:-99;';
+  wrap.innerHTML=buildPDFHTML(D,cSig,cDate);
+  await new Promise(r=>setTimeout(r,500));
+  try{
+    const canvas=await html2canvas(wrap,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#faf8f3',width:794,height:wrap.scrollHeight,windowWidth:794,windowHeight:wrap.scrollHeight,scrollX:0,scrollY:0,logging:false,imageTimeout:0});
+    const{jsPDF}=window.jspdf;
+    const img=canvas.toDataURL('image/jpeg',.95);
+    const pw=210,ph=(canvas.height*pw)/canvas.width;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[pw,ph]});
+    pdf.addImage(img,'JPEG',0,0,pw,ph,undefined,'FAST');
+    pdf.save(`Agreement-${D.agreementId}.pdf`);
+  }catch(e){console.error(e);alert('PDF failed: '+e.message);}
+  wrap.innerHTML=''; wrap.style.cssText='';
+  if(!wasLight) document.body.classList.remove('light');
+  if(btn){btn.disabled=false;btn.textContent='Download PDF';}
+}
+
+function buildPDFHTML(D,cSig,cDate){
+  const scope=D.scope&&D.scope.length>0?`<ul style="margin:8px 0 8px 16px">${D.scope.map(s=>`<li style="font-size:12px;color:#2e2c20;margin-bottom:4px">${s}</li>`).join('')}</ul>`:'As discussed between both parties.';
+  let fees=`Total fee: <strong>₹${D.fee}</strong>.`;
+  if(D.advance) fees+=` Advance: <strong>₹${D.advance}</strong> due on signing.`;
+  if(D.balance) fees+=` Balance due upon <strong>${D.balance}</strong>.`;
+  if(D.payment) fees+=` Payment via ${D.payment}.`;
+  return`<style>*{box-sizing:border-box;margin:0;padding:0}body,div{font-family:Georgia,serif;color:#1a1810;font-size:12px;line-height:1.7}.gl{height:1px;background:linear-gradient(90deg,#8a6a2e,rgba(138,106,46,.1),transparent);margin:14px 0}.lbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070}.itl{font-style:italic;font-size:13px;color:#2e2c20}.cn{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#8a6a2e;margin-bottom:4px}.ct{font-style:italic;font-size:17px;color:#1a1810;margin-bottom:8px}.cb{font-size:12px;color:#2e2c20;line-height:1.8}.cb strong{color:#1a1810}.hr{height:1px;background:#ddd8c8;margin:16px 0}.hb{border:1px solid rgba(138,106,46,.2);background:rgba(138,106,46,.04);padding:14px 18px;border-radius:2px;margin:12px 0}.sb{border:1px solid #ddd8c8;border-radius:2px;padding:8px;min-height:60px;background:#ede8d8;display:flex;align-items:center}.ft{margin-top:28px;padding-top:14px;border-top:1px solid #ddd8c8;display:flex;justify-content:space-between;align-items:flex-end}.fb{font-size:8px;letter-spacing:.1em;color:#c0b898;text-transform:uppercase;font-family:Georgia,serif}</style>
+  <div style="font-style:italic;font-size:30px;font-family:Georgia,serif">ConversionSystem<sup style="font-size:.32em;font-style:normal;vertical-align:super">™</sup></div>
+  <div style="font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:#8a6a2e;margin-top:5px">For Jewellery Brands · Psychology Specialisation</div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:14px">
+    <div><div class="lbl">Agreement no.</div><div class="itl">${D.agreementId}</div></div>
+    <div><div class="lbl">Date</div><div class="itl">${D.date}</div></div>
+    <div><div class="lbl">Client</div><div class="itl">${D.clientName}</div></div>
+    <div><div class="lbl">Project</div><div class="itl">${D.project}</div></div>
+  </div>
+  <div class="gl"></div>
+  <div style="margin-bottom:16px"><div class="cn">01 · Parties</div><div class="ct">The Parties</div><div class="cb">This Agreement is entered into on <strong>${D.date}</strong> between <strong>Kali Srivastava (ConversionSystem™)</strong> and <strong>${D.clientName}${D.clientBrand?', '+D.clientBrand:''}${D.clientCity?', '+D.clientCity:''}</strong>.</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">02 · Fees</div><div class="ct">Project Fees & Payment</div>
+  <div class="hb" style="display:flex;gap:16px;flex-wrap:wrap">
+    <div><div class="lbl">Total Fee</div><div style="font-style:italic;font-size:15px">₹${D.fee}</div></div>
+    ${D.advance?`<div><div class="lbl">Advance</div><div style="font-style:italic;font-size:15px">₹${D.advance}</div></div>`:''}
+    ${D.hours?`<div><div class="lbl">Hours</div><div style="font-style:italic;font-size:15px">${D.hours}</div></div>`:''}
+    ${D.duration?`<div><div class="lbl">Duration</div><div style="font-style:italic;font-size:15px">${D.duration}</div></div>`:''}
+  </div>
+  <div class="cb">${fees} Invoices due within 7 days.</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">03 · Scope</div><div class="ct">Scope of Work</div><div class="cb">${scope}</div><div class="hr"></div></div>
+  ${D.deliverables?`<div style="margin-bottom:16px"><div class="cn">04 · Deliverables</div><div class="ct">Deliverables & Timeline</div><div class="cb">${D.deliverables.replace(/\n/g,'<br>')}</div><div class="hr"></div></div>`:''}
+  <div style="margin-bottom:16px"><div class="cn">05 · Revisions</div><div class="ct">Revisions</div><div class="cb">${D.revisions||'Two (2) rounds of revisions included.'}</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">06 · Confidentiality</div><div class="ct">Confidentiality</div><div class="cb">Both parties hold all proprietary information in strict confidence. This obligation survives termination.</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">07 · IP</div><div class="ct">Intellectual Property</div><div class="cb">Deliverables become Client's property upon full payment. ConversionSystem™ retains its proprietary methodologies.</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">08 · Termination</div><div class="ct">Termination</div><div class="cb">Either party may terminate with 14 days written notice. Advance is non-refundable unless in material breach.</div><div class="hr"></div></div>
+  <div style="margin-bottom:16px"><div class="cn">09 · Disputes</div><div class="ct">Dispute Resolution</div><div class="cb">Disputes resolved by good-faith communication, then mediation. Jurisdiction: <strong>${D.jurisdiction}</strong>.</div><div class="hr"></div></div>
+  ${D.clause?`<div style="margin-bottom:16px"><div class="cn">10 · Special Terms</div><div class="ct">Special Terms</div><div class="cb">${D.clause}</div><div class="hr"></div></div>`:''}
+  <div style="margin-top:22px">
+    <div style="font-style:italic;font-size:18px;font-family:Georgia,serif;margin-bottom:4px">Digital Signatures</div>
+    <div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#8a8070;margin-bottom:14px">Both parties confirm all terms</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div>
+        <div class="lbl">Service Provider</div>
+        <div style="font-style:italic;font-size:14px;margin-bottom:8px">Kali Srivastava · ConversionSystem™</div>
+        <div class="sb">${D.providerSig?`<img src="${D.providerSig}" style="max-height:70px;display:block">`:'<span style="color:#8a8070;font-size:10px">Signature on file</span>'}</div>
+        <div class="lbl" style="margin-top:6px">Signed on</div>
+        <div style="font-style:italic;font-size:12px;color:#2e2c20">${D.providerDate||D.date||'—'}</div>
+      </div>
+      <div>
+        <div class="lbl">Client</div>
+        <div style="font-style:italic;font-size:14px;margin-bottom:8px">${D.clientName}</div>
+        <div class="sb">${cSig?`<img src="${cSig}" style="max-height:70px;display:block">`:'<span style="color:#8a8070;font-size:10px">Pending</span>'}</div>
+        <div class="lbl" style="margin-top:6px">Signed on</div>
+        <div style="font-style:italic;font-size:12px;color:#2e2c20">${cDate}</div>
+      </div>
+    </div>
+  </div>
+  <div class="ft">
+    <div><div class="fb">ConversionSystem™ · conversionsystem.com</div><div class="fb">support@conversionsystem.com</div></div>
+    <div class="fb">${D.agreementId}</div>
+  </div>`;
+}
+</script>
+</body>
+</html>
