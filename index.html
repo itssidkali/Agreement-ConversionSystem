@@ -791,7 +791,7 @@ function submitAgreement(){
     const D=currentD;
     const subj=encodeURIComponent(`[SIGNED] ${D.clientBrand||D.clientName} — ${D.agreementId}`);
     const body=encodeURIComponent(`Agreement Executed — ConversionSystem™\n\nAgreement No: ${D.agreementId}\nClient: ${D.clientName}\nBrand: ${D.clientBrand}\nEmail: ${D.clientEmail}\nProject: ${D.project}\nTotal Fee: ₹${D.fee}\n${D.advance?'Advance: ₹'+D.advance+'\n':''}\nClient signed on: ${d}\nStatus: FULLY EXECUTED ✦\n\n— ConversionSystem™ Agreement System`);
-    window.open(`mailto:support@conversionsystem.com?subject=${subj}&body=${body}`);
+    //window.open(`mailto:support@conversionsystem.com?subject=${subj}&body=${body}`);
   }
   document.getElementById('sc-success').classList.add('show');
   window.scrollTo(0,0);
